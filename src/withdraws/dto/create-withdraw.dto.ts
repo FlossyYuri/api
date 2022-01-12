@@ -6,5 +6,5 @@ export class CreateWithdrawDto extends PickType(Withdraw, [
   'note',
   'details',
   'payment_method',
-  'shop_id',
+  'shop',
 ]) {}

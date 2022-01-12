@@ -11,6 +11,7 @@ export class CreateShopDto extends PickType(Shop, [
   'balance',
 ]) {
   categories: number[];
+  ownerId: number;
 }
 
 export class ApproveShopDto {

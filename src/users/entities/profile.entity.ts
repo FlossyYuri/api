@@ -12,7 +12,10 @@ import { User } from './user.entity';
 
 @Entity()
 export class Profile extends CoreEntity {
-  @OneToOne(() => Attachment)
+  @OneToOne(() => Attachment, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
   @JoinColumn()
   avatar?: Attachment;
 

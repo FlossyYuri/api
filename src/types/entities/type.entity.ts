@@ -1,6 +1,8 @@
 import { Category } from 'src/categories/entities/category.entity';
 import { Attachment } from 'src/common/entities/attachment.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
+import { Product } from 'src/products/entities/product.entity';
+import { Tag } from 'src/tags/entities/tag.entity';
 import {
   Column,
   Entity,
@@ -34,8 +36,15 @@ export class Type extends CoreEntity {
   banners?: Banner[];
   @OneToMany(() => Attachment, (promo) => promo.promo_type)
   promotional_sliders?: Attachment[];
+
   @OneToMany(() => Category, (categories) => categories.type)
   categories?: Category[];
+
+  @OneToMany(() => Product, (product) => product.type)
+  products?: Product[];
+
+  @OneToMany(() => Tag, (tag) => tag.type)
+  tags?: Tag[];
 
   @OneToOne(() => TypeSettings)
   @JoinColumn()

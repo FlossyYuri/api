@@ -7,21 +7,31 @@ import {
   Param,
   Delete,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ShopsService } from './shops.service';
 import { CreateShopDto } from './dto/create-shop.dto';
+import { Request as HTTPRequest } from 'express';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { GetShopsDto, ShopPaginator } from './dto/get-shops.dto';
 import { GetStaffsDto } from './dto/get-staffs.dto';
 import { UserPaginator } from 'src/users/dto/get-users.dto';
+import { User } from 'src/users/entities/user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('shops')
 export class ShopsController {
   constructor(private readonly shopsService: ShopsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createShopDto: CreateShopDto) {
-    return this.shopsService.create(createShopDto);
+  async create(
+    @Req() request: HTTPRequest,
+    @Body() createShopDto: CreateShopDto,
+  ) {
+    createShopDto.ownerId = (request.user as User).id;
+    return await this.shopsService.create(createShopDto);
   }
 
   @Get()

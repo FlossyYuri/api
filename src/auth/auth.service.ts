@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   AuthResponse,
   ChangePasswordDto,
@@ -15,35 +15,59 @@ import {
   OtpDto,
 } from './dto/create-auth.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { plainToClass } from 'class-transformer';
 import { User } from 'src/users/entities/user.entity';
-import usersJson from 'src/users/users.json';
-const users = plainToClass(User, usersJson);
+import { getConnection } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+import { from, Observable } from 'rxjs';
 
 @Injectable()
 export class AuthService {
-  private users: User[] = users;
+  constructor(
+    private usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async generateJwt(user: User): Promise<string> {
+    return await this.jwtService.signAsync({ user });
+  }
+
   async register(createUserInput: RegisterDto): Promise<AuthResponse> {
     const user: User = {
       id: uuidv4(),
-      ...users[0],
       ...createUserInput,
       created_at: new Date(),
       updated_at: new Date(),
     };
-
-    this.users.push(user);
+    const result = await getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(User)
+      .values(user)
+      .execute();
+    const newUser = await this.usersService.findOne(result.raw.insertId);
     return {
-      token: 'jwt token',
+      token: await this.generateJwt(newUser),
       permissions: ['super_admin', 'customer'],
     };
   }
   async login(loginInput: LoginDto): Promise<AuthResponse> {
-    console.log(loginInput);
-    return {
-      token: 'jwt token',
-      permissions: ['super_admin', 'customer'],
-    };
+    const user = await this.validateUser(loginInput.email, loginInput.password);
+    console.log(user);
+    if (user)
+      return {
+        token: await this.generateJwt(user),
+        permissions: ['super_admin', 'customer'],
+      };
+    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  }
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.usersService.validateUser(email, pass);
+    if (user && user.password === pass) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
   }
   async changePassword(
     changePasswordInput: ChangePasswordDto,
@@ -134,8 +158,9 @@ export class AuthService {
   // public getUser(getUserArgs: GetUserArgs): User {
   //   return this.users.find((user) => user.id === getUserArgs.id);
   // }
-  me(): User {
-    return this.users[0];
+  async me(id: number): Promise<any> {
+    const user = await this.usersService.findOne(id);
+    return user;
   }
 
   // updateUser(id: number, updateUserInput: UpdateUserInput) {

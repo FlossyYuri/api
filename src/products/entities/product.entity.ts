@@ -13,6 +13,8 @@ import {
   OneToOne,
   JoinColumn,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 enum ProductStatus {
   PUBLISH = 'publish',
@@ -24,6 +26,17 @@ enum ProductType {
 }
 
 @Entity()
+export class OrderProductPivot extends CoreEntity {
+  @Column()
+  variation_option_id?: number;
+  @Column()
+  order_quantity: number;
+  @Column()
+  unit_price: number;
+  @Column()
+  subtotal: number;
+}
+@Entity()
 export class Product extends CoreEntity {
   @Column()
   name: string;
@@ -31,25 +44,44 @@ export class Product extends CoreEntity {
   @Column()
   slug: string;
 
-  @Column()
-  type_id: number;
+  @ManyToOne(() => Type, (type) => type.products)
+  type?: Type;
 
   @Column()
   product_type: ProductType;
 
+  @ManyToMany(() => Category, (category) => category.products)
+  @JoinTable()
   categories: Category[];
-  tags?: Tag[];
-  variations?: AttributeValue[];
-  variation_options?: Variation[];
-  pivot?: OrderProductPivot;
-  orders?: Order[];
-  shop: Shop;
-  related_products?: Product[];
-  gallery?: Attachment[];
-  image?: Attachment;
 
-  @Column()
-  shop_id: number;
+  @ManyToMany(() => Tag, (tag) => tag.products)
+  tags?: Tag[];
+
+  @OneToMany(() => AttributeValue, (av) => av.product)
+  variations?: AttributeValue[];
+
+  @OneToMany(() => Variation, (va) => va.product)
+  variation_options?: Variation[];
+
+  @OneToOne(() => OrderProductPivot)
+  @JoinColumn()
+  pivot?: OrderProductPivot;
+
+  @ManyToOne(() => Order, (order) => order.products)
+  orders?: Order[];
+
+  @ManyToOne(() => Shop, (shop) => shop.products)
+  shop: Shop;
+
+  @ManyToOne(() => Product, (product) => product.id)
+  related_products?: Product[];
+
+  @OneToMany(() => Attachment, (attachment) => attachment.product)
+  gallery?: Attachment[];
+
+  @OneToOne(() => Attachment)
+  @JoinColumn()
+  image?: Attachment;
 
   @Column()
   description: string;
@@ -94,13 +126,6 @@ export class Product extends CoreEntity {
   unit: string;
 }
 
-export class OrderProductPivot {
-  variation_option_id?: number;
-  order_quantity: number;
-  unit_price: number;
-  subtotal: number;
-}
-
 @Entity()
 export class Variation extends CoreEntity {
   @Column()
@@ -115,6 +140,10 @@ export class Variation extends CoreEntity {
   sale_price?: number;
   @Column()
   quantity: number;
+
+  @ManyToOne(() => Product, (product) => product.variations)
+  product?: Product;
+
   @OneToMany(() => VariationOption, (vo) => vo.variation)
   options: VariationOption[];
 }

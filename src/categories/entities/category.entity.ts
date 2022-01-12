@@ -6,6 +6,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -38,5 +39,6 @@ export class Category extends CoreEntity {
   @ManyToOne(() => Type, (type) => type.categories)
   type?: Type;
 
+  @ManyToMany(() => Product, (product) => product.categories)
   products?: Product[];
 }

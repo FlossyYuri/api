@@ -1,13 +1,25 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Shop } from 'src/shops/entities/shop.entity';
+import { Column, Entity, ManyToOne } from 'typeorm';
 
+@Entity()
 export class Withdraw extends CoreEntity {
+  @Column()
   amount: number;
+
+  @Column()
   status: WithdrawStatus;
-  shop_id: number;
+
+  @ManyToOne(() => Shop, (shop) => shop.withdraws)
   shop: Shop;
+
+  @Column()
   payment_method: string;
+
+  @Column()
   details: string;
+
+  @Column()
   note: string;
 }
 

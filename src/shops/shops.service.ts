@@ -8,6 +8,8 @@ import Fuse from 'fuse.js';
 import { GetShopsDto } from './dto/get-shops.dto';
 import { paginate } from 'src/common/pagination/paginate';
 import { GetStaffsDto } from './dto/get-staffs.dto';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 const shops = plainToClass(Shop, shopsJson);
 const options = {
@@ -17,10 +19,14 @@ const options = {
 const fuse = new Fuse(shops, options);
 @Injectable()
 export class ShopsService {
+  constructor(
+    @InjectRepository(Shop) private shopRepository: Repository<Shop>,
+  ) {}
   private shops: Shop[] = shops;
 
-  create(createShopDto: CreateShopDto) {
-    return this.shops[0];
+  async create(createShopDto: CreateShopDto) {
+    const newShop = this.shopRepository.create(createShopDto);
+    return await this.shopRepository.save(newShop);
   }
 
   getShops({ search, limit, page }: GetShopsDto) {

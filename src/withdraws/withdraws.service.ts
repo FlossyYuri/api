@@ -20,20 +20,20 @@ export class WithdrawsService {
     limit,
     page,
     status,
-    shop_id,
+    shop,
   }: GetWithdrawsDto): WithdrawPaginator {
     if (!page) page = 1;
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    let data: Withdraw[] = this.withdraws;
+    const data: Withdraw[] = this.withdraws;
     // if (status) {
     //   data = fuse.search(status)?.map(({ item }) => item);
     // }
 
-    if (shop_id) {
-      data = this.withdraws.filter((p) => p.shop_id === shop_id);
-    }
+    // if (shop) {
+    //   data = this.withdraws.filter((p) => p.shop === shop);
+    // }
     const results = data.slice(startIndex, endIndex);
     const url = `/withdraws?limit=${limit}`;
 

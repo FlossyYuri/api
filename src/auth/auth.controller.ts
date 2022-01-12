@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { Request as HTTPRequest } from 'express';
+import { User } from 'src/users/entities/user.entity';
 import { AuthService } from './auth.service';
 import {
   ChangePasswordDto,
@@ -12,6 +22,7 @@ import {
   VerifyForgetPasswordDto,
   VerifyOtpDto,
 } from './dto/create-auth.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller()
 export class AuthController {
@@ -21,8 +32,9 @@ export class AuthController {
   createAccount(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
+
   @Post('token')
-  login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto, @Request() req) {
     return this.authService.login(loginDto);
   }
   @Post('social-login-token')
@@ -64,13 +76,15 @@ export class AuthController {
     return this.authService.verifyForgetPasswordToken(verifyForgetPasswordDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('me')
-  me() {
-    return this.authService.me();
+  me(@Req() request: HTTPRequest) {
+    const user = request.user as User;
+    return this.authService.me(user.id);
   }
   @Post('add-points')
   addWalletPoints(@Body() addPointsDto: any) {
-    return this.authService.me();
+    return {};
   }
   @Post('contact-us')
   contactUs(@Body() addPointsDto: any) {

@@ -3,12 +3,10 @@ import { CoreEntity } from 'src/common/entities/core.entity';
 import {
   Column,
   Entity,
-  OneToMany,
-  OneToOne,
-  ManyToOne,
   JoinColumn,
-  ManyToMany,
   JoinTable,
+  ManyToMany,
+  OneToOne,
 } from 'typeorm';
 
 @Entity()

@@ -1,11 +1,10 @@
-import { Type } from 'class-transformer';
-import { PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
 
 export class CoreEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
   @Column()
-  created_at: Date;
+  created_at?: Date;
   @Column()
-  updated_at: Date;
+  updated_at?: Date;
 }

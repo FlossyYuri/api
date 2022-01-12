@@ -5,7 +5,7 @@ const config: MysqlConnectionOptions = {
   port: 3306,
   username: 'root',
   password: '',
-  database: 'pickbazar',
+  database: 'gobazar',
   entities: ['dist/src/**/*.entity.js'],
   migrations: ['dist/src/db/migrations/*.js'],
   synchronize: true,

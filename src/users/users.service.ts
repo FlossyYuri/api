@@ -9,7 +9,7 @@ import { User } from './entities/user.entity';
 import usersJson from './users.json';
 import { paginate } from 'src/common/pagination/paginate';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 const users = plainToClass(User, usersJson);
 
 const options = {
@@ -46,12 +46,28 @@ export class UsersService {
       ...paginate(data.length, page, limit, results.length, url),
     };
   }
-  findOne(id: number) {
-    return this.users.find((user) => user.id === id);
+  async findOne(id: number) {
+    const firstUser = await getConnection().getRepository(User).findOne(id);
+    return firstUser;
+  }
+  async validateUser(email: string, password: string) {
+    const firstUser = await getConnection()
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .where('user.password = :password AND user.email = :email', {
+        email,
+        password,
+      })
+      .getOne();
+    return firstUser;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return this.users[0];
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne(id);
+    user.name = updateUserDto.name;
+    user.profile = updateUserDto.profile;
+    user.email = updateUserDto.email;
+    return await this.userRepository.save(user);
   }
 
   remove(id: number) {
